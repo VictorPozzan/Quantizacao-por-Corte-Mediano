@@ -1,5 +1,6 @@
 const canvas = document.getElementById('canvas');
 const canvas2d = canvas.getContext('2d');
+const preQuantization = document.getElementById('pre-quantization');
 
 
 //let img = new Image();
@@ -25,6 +26,36 @@ function constructCanvas(img) {
     console.log("IHUL");
     console.log("Hello world");
     canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeigt;
+    canvas.height = img.naturalHeight;
     canvas2d.drawImage(img, 0, 0);
 }
+
+preQuantization.addEventListener("click", function(event){ //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+    event.preventDefault;
+    const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
+    let pallet = getPallet(numberColors); 
+});
+
+function getPallet (numberColors){ // retorna a paleta de cores
+    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height); //pegar as dimenções da imagem inicial
+    //let finalImage = canvas2d.createImagData(0, 0, canvas.width, canvas.height); //criar uma imagem a partir da imagem inicial
+
+    let pallet;
+    // pergar a paleta de cores da imagem
+    let dataImage = initImage.data; // dados de cada pixel da imagem 
+    let lengthImage = dataImage.length; //quantidade de pixel
+    let pixelVetor = [];
+    
+    console.log("Dados da da Imegem");
+    console.log("lenght"+lengthImage);
+    console.log("dataImage:"+dataImage);
+
+    for(let i=0; i<lengthImage; i+=4){
+        let groupPixel = [dataImage[i], dataImage[i+1], dataImage[i+2]];
+        console.log('--------------------------------------------');
+        console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
+        pixelVetor.push(groupPixel);
+    }
+
+    console.log()
+};
