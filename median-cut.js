@@ -8,6 +8,7 @@ const preQuantization = document.getElementById('pre-quantization');
 //img.crossOrigin = "";
 //img.src = image;
 
+
 window.addEventListener('load', function () {
     document.querySelector('input[type="file"]').addEventListener('change', function () {
         if (this.files && this.files[0]) {
@@ -28,6 +29,21 @@ function constructCanvas(img) {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     canvas2d.drawImage(img, 0, 0);
+    
+    console.log(getHistogram());
+}
+
+function getHistogram(){
+    let image = canvas2d.getImageData(0, 0, canvas.width, canvas.height).data;
+    let RHistogram = Array(256).fill(0);
+    let GHistogram = Array(256).fill(0);
+    let BHistogram = Array(256).fill(0);
+    for(let i=0; i<image.length; i+=4){
+        RHistogram[image[i]]++;
+        GHistogram[image[i+1]]++;
+        BHistogram[image[i+2]]++;
+    }
+    return [RHistogram, GHistogram, BHistogram];
 }
 
 preQuantization.addEventListener("click", function(event){ //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
@@ -37,7 +53,7 @@ preQuantization.addEventListener("click", function(event){ //esta função serve
 });
 
 function getPallet (numberColors){ // retorna a paleta de cores
-    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height); //pegar as dimenções da imagem inicial
+    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height); //pegar as dimensões da imagem inicial
     //let finalImage = canvas2d.createImagData(0, 0, canvas.width, canvas.height); //criar uma imagem a partir da imagem inicial
 
     let pallet;
@@ -47,7 +63,7 @@ function getPallet (numberColors){ // retorna a paleta de cores
     let pixelVetor = [];
     
     console.log("Dados da da Imegem");
-    console.log("lenght"+lengthImage);
+    console.log("length"+lengthImage);
     console.log("dataImage:"+dataImage);
 
     for(let i=0; i<lengthImage; i+=4){
