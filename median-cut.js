@@ -30,10 +30,49 @@ function constructCanvas(img) {
     canvas.height = img.naturalHeight;
     canvas2d.drawImage(img, 0, 0);
     
-    //Chamei minha funçao aqui pq nao faço ideia de como fazer um botao ~Igor
-    console.log(getHistogram());
 }
 
+function getMaiorAmplitude(RGBhistograms){
+    //Retorna o canal de maior amplitude e sua amplitude
+    let maiorDiff = 0;
+    let canal;
+    let ampR = getAmplitude(RGBhistograms[0]);
+    let ampG = getAmplitude(RGBhistograms[1]);
+    let ampB = getAmplitude(RGBhistograms[2]);
+    
+    if(ampR > ampG){
+        maiorDiff = ampR;
+        canal = "R";
+    }else{
+        maiorDiff = ampG;
+        canal = "G";
+    }
+    if(ampB > maiorDiff){
+        maiorDiff = ampB;
+        canal = "B"
+    }
+    return [canal, maiorDiff]
+}
+
+function getAmplitude(hist){
+    //Retorna a amplitude do histograma
+    //Ex.: freq = [0,0,0,3,2,0,1,0,6,0,0,0]; getAmplitude(freq) == 5
+    let lowerLimit, upperLimit = 0;
+    for(let i=0; i<hist.length; i++){
+        if(hist[i] != 0){
+            lowerLimit = upperLimit = i; 
+            break;
+        }
+    } 
+    for(let i=(hist.length - 1); i>lowerLimit; i--){
+        if(hist[i] != 0){
+            upperLimit = i;
+            break;
+        }
+    }
+    console.log(upperLimit, lowerLimit);
+    return upperLimit - lowerLimit;
+}
 
 function getHistogram(){
     //Retorna um array com o histograma dos 3 canais
