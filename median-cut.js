@@ -35,23 +35,26 @@ function constructCanvas(img) {
 function getMaiorAmplitude(RGBhistograms){
     //Retorna o canal de maior amplitude e sua amplitude
     let maiorDiff = 0;
-    let canal;
+    let canalString, canalId;
     let ampR = getAmplitude(RGBhistograms[0]);
     let ampG = getAmplitude(RGBhistograms[1]);
     let ampB = getAmplitude(RGBhistograms[2]);
     
     if(ampR > ampG){
         maiorDiff = ampR;
-        canal = "R";
+        canalString = "R";
+        canalId = 0;
     }else{
         maiorDiff = ampG;
-        canal = "G";
+        canalString = "G";
+        canalId = 1;
     }
     if(ampB > maiorDiff){
         maiorDiff = ampB;
-        canal = "B"
+        canalString = "B";
+        canalId = 2;
     }
-    return [canal, maiorDiff]
+    return [canalId, canalString, maiorDiff]
 }
 
 function getAmplitude(hist){
@@ -70,7 +73,7 @@ function getAmplitude(hist){
             break;
         }
     }
-    console.log(upperLimit, lowerLimit);
+    //console.log(upperLimit, lowerLimit);
     return upperLimit - lowerLimit;
 }
 
@@ -108,14 +111,77 @@ function getPallet (numberColors){ // retorna a paleta de cores
     
     console.log("Dados da da Imegem");
     console.log("length"+lengthImage);
-    console.log("dataImage:"+dataImage);
+    //console.log("dataImage:"+dataImage);
 
     for(let i=0; i<lengthImage; i+=4){
         let groupPixel = [dataImage[i], dataImage[i+1], dataImage[i+2]];
-        console.log('--------------------------------------------');
-        console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
+        //console.log('--------------------------------------------');
+        //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
         pixelVetor.push(groupPixel);
     }
 
-    console.log()
+    let histogram = getHistogram();
+    console.log(histogram);
+    let greaterBreadth = getMaiorAmplitude(histogram);
+
+
+    let colorString = [...new Set(pixelVetor.map(color => color.toString()))]; 
+    let colorsArr = colorString.map(color => color.split(','));
+
+
+    console.log(greaterBreadth[0]);
+    colorsArr.sort(function(a, b) {return +a[greaterBreadth[0]] - +b[greaterBreadth[0]];});
+    console.log(colorsArr);
+
+    let sliceArrColors = [];
+
+    medianCut(colorsArr, colorsArr, numberColors, sliceArrColors, histogram);
+    
+    console.log("aaaaaa");
+    pallet = getColors(sliceArrColors);
+    console.log(pallet);
+
+    for(let i=0; i<pallet.length ; i+=3){
+        console.log('--------------------------------------------');
+        console.log("Cor RGB:"+pallet[i]);
+    }
 };
+
+function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors, histogram){
+    if(numberColors === 1){
+        sliceArrColors.push(colorsArr1);
+        return;
+    }else{
+        numberColors /= 2;
+        let greaterBreadth = getMaiorAmplitude(histogram);
+        console.log(greaterBreadth[0]);
+        colorsArr1.sort(function(a, b) {return +a[greaterBreadth[0]] - +b[greaterBreadth[0]];});
+        let half = Math.floor(colorsArr1.length/2);
+        let firstHalf = colorsArr1.slice(0, half-1);
+        let secondHalf = colorsArr1.slice(half);
+        medianCut(firstHalf, colorsArr1, numberColors, sliceArrColors, histogram);
+        medianCut(secondHalf, colorsArr1, numberColors, sliceArrColors, histogram);
+    }
+}
+
+function getColors(sliceArrColors){
+    let colorSet = [];
+    
+    sliceArrColors.forEach(element => {
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        element.forEach(sumColor =>{
+            r += + sumColor[0];
+            g += + sumColor[1];
+            b += + sumColor[2];
+        });
+        let red = Math.floor(r/element.length);
+        let green = Math.floor(g/element.length);
+        let blue = Math.floor(b/element.length);
+
+        let pallet = [red, green, blue];
+        colorSet.push(pallet);
+    });
+    return colorSet;
+}
