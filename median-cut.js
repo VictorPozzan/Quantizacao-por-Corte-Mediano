@@ -30,10 +30,15 @@ function constructCanvas(img) {
     canvas.height = img.naturalHeight;
     canvas2d.drawImage(img, 0, 0);
     
+    //Chamei minha funçao aqui pq nao faço ideia de como fazer um botao ~Igor
     console.log(getHistogram());
 }
 
+
 function getHistogram(){
+    //Retorna um array com o histograma dos 3 canais
+    //Em XHistogram a posiçao i tem o numero de ocorrencias da intensidade i 
+    //Ex.: R=[36,0, ..., 0], G=[36,0, ..., 0], B=[36,0, ..., 0] quer dizer que a cor preta apareceu 36 vezes na imagem
     let image = canvas2d.getImageData(0, 0, canvas.width, canvas.height).data;
     let RHistogram = Array(256).fill(0);
     let GHistogram = Array(256).fill(0);
