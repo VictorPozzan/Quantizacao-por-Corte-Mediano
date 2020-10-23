@@ -27,106 +27,48 @@ function constructCanvas(img) {
 
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
     event.preventDefault;
-    const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
-    
-    let histogram = getHistogram();
-    console.log(histogram);
-
-    
-    cutMedian(histogram);
+    const numberColors = 2; //numero de cores que a nossa imagem deve ter 2^8=256
+    let pallet = getPallet(numberColors);
 });
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
-function getHistogram() {
-    //Retorna um array com o histograma dos 3 canais
-    //Em XHistogram a posiçao i tem o numero de ocorrencias da intensidade i 
-    //Ex.: R=[36,0, ..., 0], G=[36,0, ..., 0], B=[36,0, ..., 0] quer dizer que a cor preta apareceu 36 vezes na imagem
-    let image = canvas2d.getImageData(0, 0, canvas.width, canvas.height).data;
-    let RHistogram = Array(256).fill(0);
-    let GHistogram = Array(256).fill(0);
-    let BHistogram = Array(256).fill(0);
-    for (let i = 0; i < image.length; i += 4) {
-        RHistogram[image[i]]++;
-        GHistogram[image[i + 1]]++;
-        BHistogram[image[i + 2]]++;
-    }
-    return [RHistogram, GHistogram, BHistogram];
-}
+function getPallet(numberColors) {
+    /*let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
+    let dataImage = initImage.data; // dados de cada pixel da imagem 
+    let lengthImage = dataImage.length; //quantidade de pixel
+    let pixelVetor = [];
+    console.log("Dados da da Imegem");
 
-
-function getMaiorAmplitude(RGBhistograms) {
-    //Retorna o canal de maior amplitude e sua amplitude
-    
-    let maiorDiff = 0;
-    let canalId;
-    let amplitudeLinha;
-
-    console.log("getMaiorAmplitude");
-    console.log(RGBhistograms);
-    for(let i=0; i<RGBhistograms.length; i++){
-        amplitudeLinha = getAmplitude(RGBhistograms[i]);
-        if(amplitudeLinha >= maiorDiff){
-            canalId = i;
-            maiorDiff = amplitudeLinha;
-        }
+    for (let i = 0; i < lengthImage; i += 4) {
+        let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
+        //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
+        pixelVetor.push(groupPixel);
     }
 
-    return canalId;
+
+    let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
+    let colorsArr = colorString.map(color => color.split(','));*/
+
+    let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
+    [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
+    [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
+    [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
+    ];
+
+
+    let sliceArrColors = [];
+
+    medianCut(colorsArr, colorsArr, numberColors, sliceArrColors);
+
+    pallet = getColors(sliceArrColors);
+    console.log("Paleta de cores");
+    console.log(pallet);
+    for (let i = 0; i < pallet.length; i++) {
+        console.log("Cor RGB:" + pallet[i]);
+    }
 }
 
-function getAmplitude(hist) {
-    //Retorna a amplitude do histograma
-    //Ex.: freq = [0,0,0,3,2,0,1,0,6,0,0,0]; getAmplitude(freq) == 5
-    let lowerLimit, upperLimit = 0;
-    for (let i = 0; i < hist.length; i++) {
-        if (hist[i] != 0) {
-            lowerLimit = upperLimit = i;
-            break;
-        }
-    }
-    for (let i = (hist.length - 1); i > lowerLimit; i--) {
-        if (hist[i] != 0) {
-            upperLimit = i;
-            break;
-        }
-    }
-    //console.log(upperLimit, lowerLimit);
-    return upperLimit - lowerLimit;
-}
-
-function cutMedian(histogram){
-    console.log("histogram"+histogram);
-    for(let i=0; i<1; i++){
-        let greaterBreadth = getMaiorAmplitude(histogram); 
-        console.log("maior amplitude;"+greaterBreadth);
-        let half = getMedian(histogram[greaterBreadth]);
-        let firstHalf = histogram.slice(0, half - 1);
-        let secondHalf = histogram.slice(half, histogram[greaterBreadth].length);
-        histogram = histogram.splice(greaterBreadth, 1, firstHalf, secondHalf);
-        console.log("sssssssssssssssssssssssS");
-        console.log(histogram);
-    }
-
-}
-
-function getMedian(histogram){ 
-    let indexCut;
-    let intensity = 0;
-    for(let i=0; i<histogram.length; i++){
-        intensity += histogram[i];
-    }
-
-    console.log("Intensidade: "+intensity);
-    indexCut = Math.floor(intensity/2);
-    console.log("indexCut:"+indexCut);
-    return indexCut;
-}
-
-
-function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors, histogram) {
+function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors) {
     if (numberColors === 1) {
         sliceArrColors.push(colorsArr1);
         return;
@@ -139,8 +81,8 @@ function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors, histogr
         let half = Math.floor(colorsArr1.length / 2);
         let firstHalf = colorsArr1.slice(0, half - 1);
         let secondHalf = colorsArr1.slice(half);
-        medianCut(firstHalf, colorsArr1, numberColors, sliceArrColors, histogram);
-        medianCut(secondHalf, colorsArr1, numberColors, sliceArrColors, histogram);
+        medianCut(firstHalf, colorsArr1, numberColors, sliceArrColors);
+        medianCut(secondHalf, colorsArr1, numberColors, sliceArrColors);
     }
 }
 
