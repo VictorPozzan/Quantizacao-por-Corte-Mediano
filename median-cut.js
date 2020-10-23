@@ -56,6 +56,7 @@ function getPallet(numberColors) {
     ];
 
 
+    let histogram = getHistogram(colorsArr);
     let sliceArrColors = [];
 
     medianCut(colorsArr, colorsArr, numberColors, sliceArrColors);
@@ -66,6 +67,44 @@ function getPallet(numberColors) {
     for (let i = 0; i < pallet.length; i++) {
         console.log("Cor RGB:" + pallet[i]);
     }
+}
+
+function getHistogram(corlorsArr) {
+    let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez
+    let histogram = [];
+    histogram.push(firstColor); //estrutura do histogram [[R, G, B], 1]
+    corlorsArr.splice(0, 1);// remove o primeiro elemento do array ColorsArr pois este elemento já foi adicionado no histograma
+
+    corlorsArr.forEach(function (item, indece, array) {
+        var beInHistogram = false;
+        histogram.forEach(function (itemHist, indexHist, arrayHist) {
+            var vetors_equals = item.every(function (element, index) {
+                return element === itemHist[0][index];
+            });
+            if (vetors_equals) {
+                itemHist[1] = itemHist[1] + 1;
+                beInHistogram = true;
+                return;
+            }
+        });
+
+        if (!beInHistogram) {
+            let color = [item, 1];
+            histogram.push(color);
+        }
+    });
+
+    console.log("histograma:");
+    histogram.forEach(function (item, indece, array) {
+        console.log(item);
+    });
+    return histogram;
+}
+
+function vetorString(array, array2) {
+    array.toString();
+    array2.toString();
+    return array2 == array2;
 }
 
 function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors) {
