@@ -53,13 +53,13 @@ function getPallet(numberColors) {
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
     [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-    ];
+   ];
 
 
     let histogram = getHistogram(colorsArr);
     let sliceArrColors = [];
 
-    medianCut(colorsArr, colorsArr, numberColors, sliceArrColors);
+    medianCut(histogram, numberColors, sliceArrColors);
 
     pallet = getColors(sliceArrColors);
     console.log("Paleta de cores");
@@ -74,11 +74,12 @@ function getHistogram(corlorsArr) {
     let histogram = [];
     histogram.push(firstColor); //estrutura do histogram [[R, G, B], 1]
     corlorsArr.splice(0, 1);// remove o primeiro elemento do array ColorsArr pois este elemento já foi adicionado no histograma
+    var beInHistogram;
 
     corlorsArr.forEach(function (item, indece, array) {
-        var beInHistogram = false;
+        beInHistogram = false;
         histogram.forEach(function (itemHist, indexHist, arrayHist) {
-            var vetors_equals = item.every(function (element, index) {
+            var vetors_equals = item.every(function (element, index) {//verifica se os vetores são iguais item === itemHist
                 return element === itemHist[0][index];
             });
             if (vetors_equals) {
@@ -101,28 +102,66 @@ function getHistogram(corlorsArr) {
     return histogram;
 }
 
-function vetorString(array, array2) {
-    array.toString();
-    array2.toString();
-    return array2 == array2;
-}
 
-function medianCut(colorsArr1, colorsArr2, numberColors, sliceArrColors) {
+function medianCut(histogram, numberColors, sliceArrColors) {
     if (numberColors === 1) {
-        sliceArrColors.push(colorsArr1);
+        console.log("histograaaaaaaaaaaaaaama:");
+        histogram.forEach(function (item) {
+            console.log(item);
+        });
+        sliceArrColors.push(histogram);
         return;
     } else {
         numberColors /= 2;
-        //let greaterBreadth = getMaiorAmplitude(histogram);
-        let greaterBreadth = getGreaterAmplitude(colorsArr1);
-        //console.log(greaterBreadth);
-        colorsArr1.sort(function (a, b) { return +a[greaterBreadth] - +b[greaterBreadth]; });
-        let half = Math.floor(colorsArr1.length / 2);
-        let firstHalf = colorsArr1.slice(0, half - 1);
-        let secondHalf = colorsArr1.slice(half);
-        medianCut(firstHalf, colorsArr1, numberColors, sliceArrColors);
-        medianCut(secondHalf, colorsArr1, numberColors, sliceArrColors);
+        let greaterBreadth = getGreaterAmplitude(histogram); 
+        console.log(greaterBreadth);
+
+        histogram.sort(function (a, b) { return +a[0][greaterBreadth] -+b[0][greaterBreadth]}); 
+        let numberPixels = getOcurrenceHistogram(histogram);
+        let index = getIndexCutHistogram(histogram, numberPixels);
+        let firstHalf = histogram.slice(0, index+1);
+        let secondHalf = histogram.slice(index+1);
+        //let half = Math.floor(colorsArr1.length / 2);
+        //let firstHalf = colorsArr1.slice(0, half - 1);
+        //let secondHalf = colorsArr1.slice(half);
+        medianCut(firstHalf, numberColors, sliceArrColors);
+        medianCut(secondHalf, numberColors, sliceArrColors);
     }
+}
+
+function getOcurrenceHistogram(histogram){
+    let count = 0;
+    histogram.forEach(function (item, indece, array) {
+        count = item[1]+count;
+    });
+    return count;
+}
+
+
+function getIndexCutHistogram(histogram, numberPixels){
+    let indexCut  = numberPixels/2;
+    let acumulatorFrequence = 0;
+    
+    let cutPosition;
+
+    for(let i=0; i<histogram.length; i++){
+        acumulatorFrequence = histogram[i][1] + acumulatorFrequence;        
+        if(acumulatorFrequence==indexCut){
+            cutPosition = i;
+            break;
+        }else if(acumulatorFrequence>indexCut){
+            let diffNext = acumulatorFrequence - indexCut;
+            let diffLast = indexCut - (acumulatorFrequence - histogram[i][1]);
+            if(diffNext < diffLast){
+                cutPosition = i;
+            }else{
+                cutPosition = i-1;
+            }
+            
+            break;
+        }
+    }
+    return cutPosition;
 }
 
 function getColors(sliceArrColors) {
@@ -147,11 +186,20 @@ function getColors(sliceArrColors) {
     return colorSet;
 }
 
+function treatArray(colorsRGB){
+    let colors = [];
+    colorsRGB.forEach(function (item) {
+        colors.push(item[0]);
+    });
+    return colors;
+}
+
 function getGreaterAmplitude(colorsRGB) {
     let arrayR = [], arrayG = [], arrayB = [];
-    arrayR = arrayChannelColor(colorsRGB, 0);
-    arrayG = arrayChannelColor(colorsRGB, 1);
-    arrayB = arrayChannelColor(colorsRGB, 2);
+    let colors = treatArray(colorsRGB);
+    arrayR = arrayChannelColor(colors, 0);
+    arrayG = arrayChannelColor(colors, 1);
+    arrayB = arrayChannelColor(colors, 2);
 
     let maxR, maxG, maxB;
     let minR, minG, minB;
@@ -177,6 +225,7 @@ function arrayChannelColor(colorsRGB, typeChannel) {
     let channel = [];
     for (let i = 0; i < colorsRGB.length; i += 3) {
         channel.push(colorsRGB[i][typeChannel]);
+        console.log("cores:"+colorsRGB[i]);
     }
     return channel;
 }
