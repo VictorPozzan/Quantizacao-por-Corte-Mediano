@@ -53,7 +53,7 @@ function getPallet(numberColors) {
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
     [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-   ];
+    ];
 
 
     let histogram = getHistogram(colorsArr);
@@ -113,14 +113,14 @@ function medianCut(histogram, numberColors, sliceArrColors) {
         return;
     } else {
         numberColors /= 2;
-        let greaterBreadth = getGreaterAmplitude(histogram); 
+        let greaterBreadth = getGreaterAmplitude(histogram);
         console.log(greaterBreadth);
 
-        histogram.sort(function (a, b) { return +a[0][greaterBreadth] -+b[0][greaterBreadth]}); 
+        histogram.sort(function (a, b) { return +a[0][greaterBreadth] - +b[0][greaterBreadth] });
         let numberPixels = getOcurrenceHistogram(histogram);
         let index = getIndexCutHistogram(histogram, numberPixels);
-        let firstHalf = histogram.slice(0, index+1);
-        let secondHalf = histogram.slice(index+1);
+        let firstHalf = histogram.slice(0, index + 1);
+        let secondHalf = histogram.slice(index + 1);
         //let half = Math.floor(colorsArr1.length / 2);
         //let firstHalf = colorsArr1.slice(0, half - 1);
         //let secondHalf = colorsArr1.slice(half);
@@ -129,56 +129,114 @@ function medianCut(histogram, numberColors, sliceArrColors) {
     }
 }
 
-function getOcurrenceHistogram(histogram){
+function getOcurrenceHistogram(histogram) {
     let count = 0;
     histogram.forEach(function (item, indece, array) {
-        count = item[1]+count;
+        count = item[1] + count;
     });
     return count;
 }
 
 
-function getIndexCutHistogram(histogram, numberPixels){
-    let indexCut  = numberPixels/2;
+function getIndexCutHistogram(histogram, numberPixels) {
+    let indexCut = numberPixels / 2;
     let acumulatorFrequence = 0;
-    
+
     let cutPosition;
 
-    for(let i=0; i<histogram.length; i++){
-        acumulatorFrequence = histogram[i][1] + acumulatorFrequence;        
-        if(acumulatorFrequence==indexCut){
+    for (let i = 0; i < histogram.length; i++) {
+        acumulatorFrequence = histogram[i][1] + acumulatorFrequence;
+        if (acumulatorFrequence == indexCut) {
             cutPosition = i;
             break;
-        }else if(acumulatorFrequence>indexCut){
+        } else if (acumulatorFrequence > indexCut) {
             let diffNext = acumulatorFrequence - indexCut;
             let diffLast = indexCut - (acumulatorFrequence - histogram[i][1]);
-            if(diffNext < diffLast){
+            if (diffNext < diffLast) {
                 cutPosition = i;
-            }else{
-                cutPosition = i-1;
+            } else {
+                cutPosition = i - 1;
             }
-            
+
             break;
         }
     }
     return cutPosition;
 }
 
+const histogram = arr => arr.reduce((result, item) => {
+    result[item] = (result[item] || 0) + 1
+    return result
+}, {})
+
+const pairs = obj => Object.keys(obj).map(key => [key, obj[key]])
+
+function mode(arr) {
+    let result = pairs(histogram(arr))
+        .sort((a, b) => b[1] - a[1])
+        .filter((item, index, source) => item[1] === source[0][1])
+        .map(item => item[0])
+    return result.length === arr.length ? [] : result
+}
+
+
 function getColors(sliceArrColors) {
+
     let colorSet = [];
 
-    sliceArrColors.forEach(element => {
-        let r = 0;
-        let g = 0;
-        let b = 0;
-        element.forEach(sumColor => {
-            r += + sumColor[0];
-            g += + sumColor[1];
-            b += + sumColor[2];
+    sliceArrColors.forEach(sliceColor => {
+        let red = 0, green = 0, blue = 0;
+        let arrayRed = [], arrayGreen = [], arrayBlue = [];
+        let arrayFrequence = [], arrayMpR = [], arrayMpG = [], arrayMpB = [];
+        sliceColor.forEach(color => {
+            //para calcular a moda
+            arrayRed.push(color[0][0]);
+            arrayGreen.push(color[0][1]);
+            arrayBlue.push(color[0][2]);
+
+            //para calcular a soma ponderada 
+            arrayMpR.push(color[0][0] * color[1]);
+            arrayMpG.push(color[0][1] * color[1]);
+            arrayMpB.push(color[0][2] * color[1]);
+            arrayFrequence.push(color[1]);
         });
-        let red = Math.floor(r / element.length);
-        let green = Math.floor(g / element.length);
-        let blue = Math.floor(b / element.length);
+        let r = mode(arrayRed);
+        let g = mode(arrayGreen);
+        let b = mode(arrayBlue);
+
+        if (r.length == 1) {//moda
+            red = parseInt(r[0]);
+            console.log("COR R:" + red);
+        } else {//soma ponderada
+            let TotalR = arrayMpR.reduce((total, numero) => total + numero, 0);
+            let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
+            red = Math.floor(TotalR / TotalFrequence);
+            console.log("soma ponderada:" + red);
+        }
+
+        if (g.length == 1) {
+            green = parseInt(g[0]);
+            console.log("COR G:" + green);
+        } else {
+            let TotalG = arrayMpG.reduce((total, numero) => total + numero, 0);
+            let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
+            green = Math.floor(TotalG / TotalFrequence);
+            console.log("soma ponderada:" + green);
+        }
+
+        if (blue.length == 1) {
+            blue = parseInt(b[0]);
+            console.log("COR B:" + blue);
+        } else {
+            let TotalB = arrayMpB.reduce((total, numero) => total + numero, 0);
+            let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
+            blue = Math.floor(TotalB / TotalFrequence);
+            console.log("soma ponderada:" + blue);
+        }
+        //r += + sumColor[0]
+
+        //let red = Math.floor(r / element.length);
+
 
         let pallet = [red, green, blue];
         colorSet.push(pallet);
@@ -186,7 +244,7 @@ function getColors(sliceArrColors) {
     return colorSet;
 }
 
-function treatArray(colorsRGB){
+function treatArray(colorsRGB) {
     let colors = [];
     colorsRGB.forEach(function (item) {
         colors.push(item[0]);
@@ -225,7 +283,7 @@ function arrayChannelColor(colorsRGB, typeChannel) {
     let channel = [];
     for (let i = 0; i < colorsRGB.length; i += 3) {
         channel.push(colorsRGB[i][typeChannel]);
-        console.log("cores:"+colorsRGB[i]);
+        console.log("cores:" + colorsRGB[i]);
     }
     return channel;
 }
