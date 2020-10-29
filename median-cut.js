@@ -27,13 +27,13 @@ function constructCanvas(img) {
 
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
     event.preventDefault;
-    const numberColors = 2; //numero de cores que a nossa imagem deve ter 2^8=256
+    const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
     let pallet = getPallet(numberColors);
 });
 
 
 function getPallet(numberColors) {
-    /*let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
+    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
     let dataImage = initImage.data; // dados de cada pixel da imagem 
     let lengthImage = dataImage.length; //quantidade de pixel
     let pixelVetor = [];
@@ -47,13 +47,13 @@ function getPallet(numberColors) {
 
 
     let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
-    let colorsArr = colorString.map(color => color.split(','));*/
+    let colorsArr = colorString.map(color => color.split(','));
 
-    let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
+    /*let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
     [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-    ];
+    ];*/
 
 
     let histogram = getHistogram(colorsArr);
@@ -62,13 +62,45 @@ function getPallet(numberColors) {
     medianCut(histogram, numberColors, sliceArrColors);
 
     pallet = getColors(sliceArrColors);
-    console.log("Paleta de cores");
-    console.log(pallet);
-    for (let i = 0; i < pallet.length; i++) {
-        console.log("Cor RGB:" + pallet[i]);
-    }
-}
 
+    let height = canvas.height
+    let width = canvas.width
+    let newImage = Array.from(Array(height), () => new Array(width));
+
+    let actualHeigth = 1
+    let actualWitdh = 0
+
+    colorsArr.forEach(function (item, index){
+        if (height % index === 0) {
+            actualHeigth += 1
+            actualWitdh = 0
+
+            console.table({actualHeigth, actualWitdh})
+        }
+        for (let i = 0; i < sliceArrColors.length; i++) {
+            const suposeColor = sliceArrColors[i];
+            for (let j = 0; j < suposeColor.length; j++) {
+                const cor = suposeColor[j];
+                const vetors_equals = item.every((e, i) => e === cor[0][i])
+                if(vetors_equals){
+                    newImage[height-actualHeigth][actualWitdh] = i;
+                }
+            }
+        }
+        actualWitdh += 1
+    });
+
+
+    console.log(newImage)
+    //image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
+
+    //image8bit.makeHeader()
+
+    //image8bit.makePixelData()
+
+    //image8bit.drawImage()
+
+}
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez
     let histogram = [];
@@ -76,12 +108,11 @@ function getHistogram(corlorsArr) {
     corlorsArr.splice(0, 1);// remove o primeiro elemento do array ColorsArr pois este elemento já foi adicionado no histograma
     var beInHistogram;
 
-    corlorsArr.forEach(function (item, indece, array) {
+    corlorsArr.forEach(function (item) {
         beInHistogram = false;
-        histogram.forEach(function (itemHist, indexHist, arrayHist) {
-            var vetors_equals = item.every(function (element, index) {//verifica se os vetores são iguais item === itemHist
-                return element === itemHist[0][index];
-            });
+        histogram.forEach(function (itemHist) {
+            const vetors_equals = item.every((e, i) => e === itemHist[0][i]) // compara se os vetores são iguais
+           
             if (vetors_equals) {
                 itemHist[1] = itemHist[1] + 1;
                 beInHistogram = true;
@@ -95,27 +126,17 @@ function getHistogram(corlorsArr) {
         }
     });
 
-    console.log("histograma:");
-    histogram.forEach(function (item, indece, array) {
-        console.log(item);
-    });
     return histogram;
 }
 
 
 function medianCut(histogram, numberColors, sliceArrColors) {
     if (numberColors === 1) {
-        console.log("histograaaaaaaaaaaaaaama:");
-        histogram.forEach(function (item) {
-            console.log(item);
-        });
         sliceArrColors.push(histogram);
         return;
     } else {
         numberColors /= 2;
         let greaterBreadth = getGreaterAmplitude(histogram);
-        console.log(greaterBreadth);
-
         histogram.sort(function (a, b) { return +a[0][greaterBreadth] - +b[0][greaterBreadth] });
         let numberPixels = getOcurrenceHistogram(histogram);
         let index = getIndexCutHistogram(histogram, numberPixels);
@@ -206,32 +227,26 @@ function getColors(sliceArrColors) {
 
         if (r.length == 1) {//moda
             red = parseInt(r[0]);
-            console.log("COR R:" + red);
         } else {//soma ponderada
             let TotalR = arrayMpR.reduce((total, numero) => total + numero, 0);
             let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
             red = Math.floor(TotalR / TotalFrequence);
-            console.log("soma ponderada:" + red);
         }
 
         if (g.length == 1) {
             green = parseInt(g[0]);
-            console.log("COR G:" + green);
         } else {
             let TotalG = arrayMpG.reduce((total, numero) => total + numero, 0);
             let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
             green = Math.floor(TotalG / TotalFrequence);
-            console.log("soma ponderada:" + green);
         }
 
         if (blue.length == 1) {
             blue = parseInt(b[0]);
-            console.log("COR B:" + blue);
         } else {
             let TotalB = arrayMpB.reduce((total, numero) => total + numero, 0);
             let TotalFrequence = arrayFrequence.reduce((total, numero) => total + numero, 0);
             blue = Math.floor(TotalB / TotalFrequence);
-            console.log("soma ponderada:" + blue);
         }
         //r += + sumColor[0]
 
@@ -283,7 +298,6 @@ function arrayChannelColor(colorsRGB, typeChannel) {
     let channel = [];
     for (let i = 0; i < colorsRGB.length; i += 3) {
         channel.push(colorsRGB[i][typeChannel]);
-        console.log("cores:" + colorsRGB[i]);
     }
     return channel;
 }
