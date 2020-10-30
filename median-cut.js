@@ -27,37 +27,37 @@ function constructCanvas(img) {
 
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
     event.preventDefault;
-    const numberColors = 2; //numero de cores que a nossa imagem deve ter 2^8=256
+    const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
     let pallet = getPallet(numberColors);
 });
 
 
 function getPallet(numberColors) {
-    /* let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
-     let dataImage = initImage.data; // dados de cada pixel da imagem 
-     let lengthImage = dataImage.length; //quantidade de pixel
-     console.log("width:" + canvas.width + " height:" + canvas.height);
-     let pixelVetor = [];
-     console.log("Dados da da Imegem");
- 
-     for (let i = 0; i < lengthImage; i += 4) {
-         let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
-         //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
-         pixelVetor.push(groupPixel);
-     }
-     console.log("pixelVetor:" + pixelVetor.length)
-     console.log(pixelVetor)
-     let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
-     console.log(colorString.length)
-     //console.log(colorString)
-     let colorsArr = colorString.map(color => color.split(','));
-     console.log(colorsArr.length) */
+    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
+    let dataImage = initImage.data; // dados de cada pixel da imagem 
+    let lengthImage = dataImage.length; //quantidade de pixel
+    console.log("width:" + canvas.width + " height:" + canvas.height);
+    let pixelVetor = [];
+    console.log("Dados da da Imegem");
 
-    let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
+    for (let i = 0; i < lengthImage; i += 4) {
+        let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
+        //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
+        pixelVetor.push(groupPixel);
+    }
+    console.log("pixelVetor:" + pixelVetor.length)
+    console.log(pixelVetor)
+    let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
+    console.log(colorString.length)
+    //console.log(colorString)
+    let colorsArr = colorString.map(color => color.split(','));
+    console.log(colorsArr.length)
+
+    /*let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
     [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-    ];
+    ];*/
 
     let colorsArr2 = [];
     colorsArr.forEach(imageColor => {
@@ -98,15 +98,77 @@ function getPallet(numberColors) {
     })
 
     console.log(newImage);
+    var arr = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1])
+    console.log(arr);
+    // image8bit = new BMP(arr, pallet, canvas.width, canvas.height)
 
-    image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
+    // image8bit.makeHeader()
 
-    image8bit.makeHeader()
+    //image8bit.makePixelData()
 
-    image8bit.makePixelData()
+    //image8bit.drawImage()
+    /**
+     * depth: 1 - monochrome
+     *        4 - 4-bit grayscale
+     *        8 - 8-bit grayscale
+     *       16 - 16-bit colour
+     *       32 - 32-bit colour
+     **/
+    function drawArray(arr, depth, w, h, pal) {
+        var offset, height = h, width = w, data, image;
 
-    image8bit.drawImage()
+        function conv(size) {
+            return String.fromCharCode(size & 0xff, (size >> 8) & 0xff, (size >> 16) & 0xff, (size >> 24) & 0xff);
+        }
+        function convColor(size) {
+            return String.fromCharCode(size[0], size[1], size[2], 0);
+        }
 
+        offset = depth <= 8 ? 54 + Math.pow(2, depth) * 4 : 54;
+        height = Math.ceil(Math.sqrt(arr.length * 8 / depth));
+
+
+        //BMP Header
+        data = 'BM';                          // ID field
+        data += conv(offset + arr.length + (pal.length * 3));     // BMP size
+        data += conv(0);                       // unused
+        data += conv(offset);                  // pixel data offset
+
+        //DIB Header
+        data += conv(40);                      // DIB header length
+        data += conv(height);                  // image height
+        data += conv(width);                  // image width
+        data += String.fromCharCode(1, 0);     // colour panes
+        data += String.fromCharCode(depth, 0); // bits per pixel
+        data += conv(0);                       // compression method
+        data += conv(w * h);                   // size of the raw data
+        data += conv(0);                    // horizontal print resolution
+        data += conv(0);                    // vertical print resolution
+        data += conv(256);                       // colour palette, 0 == 2^n
+        data += conv(0);                       // important colours
+
+        for (var i = 0; i < 256; i++) {
+            data += convColor(pal[i]);
+        }
+
+        //Pixel data
+
+        console.log(arr);
+        data += String.fromCharCode.apply(String, arr);
+
+
+        //Image element
+        image = document.createElement('img');
+
+        image.src = 'data:image/bmp;base64,' + btoa(data);
+        return image;
+    }
+
+    /*Usage example, visualize random numbers generated by Math.random */
+
+    document.body.appendChild(drawArray(newImage, 8, canvas.width, canvas.height, pallet));
+
+    console.log("FINISH")
 }
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez

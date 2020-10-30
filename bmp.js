@@ -21,6 +21,7 @@ class BMP {
 
         this.bitArray = new Uint8Array(this.HEADER_SIZE + this.imageSize)
         this.view = new DataView(this.bitArray.buffer)
+        this.data;
     }
 
     _setImageSize() {
@@ -77,6 +78,9 @@ class BMP {
     }
 
     makePixelData() {
+
+        this.data += String.fromCharCode.apply(String, this.image);
+        //this.view.setUint8(this.image);
         /*this.image.forEach((colorIdx) => {
             this.view.setUint8(this.bitPos, colorIdx)
         })*/
@@ -84,7 +88,7 @@ class BMP {
 
     drawImage() {
         console.log(this.view)
-        const blob = new Blob([this.bitArray], { type: "image/bmp" });
+        const blob = new Blob([this.image], { type: "image/bmp" });
 
         //        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
