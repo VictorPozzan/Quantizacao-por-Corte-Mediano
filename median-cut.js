@@ -27,33 +27,42 @@ function constructCanvas(img) {
 
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
     event.preventDefault;
-    const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
+    const numberColors = 2; //numero de cores que a nossa imagem deve ter 2^8=256
     let pallet = getPallet(numberColors);
 });
 
 
 function getPallet(numberColors) {
-    let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
-    let dataImage = initImage.data; // dados de cada pixel da imagem 
-    let lengthImage = dataImage.length; //quantidade de pixel
-    let pixelVetor = [];
-    console.log("Dados da da Imegem");
+    /* let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
+     let dataImage = initImage.data; // dados de cada pixel da imagem 
+     let lengthImage = dataImage.length; //quantidade de pixel
+     console.log("width:" + canvas.width + " height:" + canvas.height);
+     let pixelVetor = [];
+     console.log("Dados da da Imegem");
+ 
+     for (let i = 0; i < lengthImage; i += 4) {
+         let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
+         //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
+         pixelVetor.push(groupPixel);
+     }
+     console.log("pixelVetor:" + pixelVetor.length)
+     console.log(pixelVetor)
+     let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
+     console.log(colorString.length)
+     //console.log(colorString)
+     let colorsArr = colorString.map(color => color.split(','));
+     console.log(colorsArr.length) */
 
-    for (let i = 0; i < lengthImage; i += 4) {
-        let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
-        //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
-        pixelVetor.push(groupPixel);
-    }
-
-
-    let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
-    let colorsArr = colorString.map(color => color.split(','));
-
-    /*let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
+    let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
     [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-    ];*/
+    ];
+
+    let colorsArr2 = [];
+    colorsArr.forEach(imageColor => {
+        colorsArr2.push(imageColor);
+    })
 
 
     let histogram = getHistogram(colorsArr);
@@ -70,27 +79,25 @@ function getPallet(numberColors) {
     let actualHeigth = 1
     let actualWitdh = 0
 
-    function getAllIndexes(arr, val) {
-        var indexes = [], i = -1;
-        while ((i = arr.indexOf(val, i+1)) != -1){
-            indexes.push(i);
-        }
-        return indexes;
-    }    
-
     const compareArrays = (arr1, arr2) => arr1.every((e, i) => e === arr2[i])
 
-    colorsArr.forEach(imageColor => {
+    let index = 0
+    colorsArr2.forEach(imageColor => {
+        let indexPallet = 0
         sliceArrColors.forEach(colors2Replace => {
             for (let idx = 0; idx < colors2Replace.length; idx++) {
                 const [color, intensity] = colors2Replace[idx];
-                if(compareArrays(imageColor, color)) {
-                    newImage.push(idx)
+                if (compareArrays(imageColor, color)) {
+                    newImage.push(indexPallet)
                     break
                 }
             }
+            indexPallet++;
         })
+        index++;
     })
+
+    console.log(newImage);
 
     image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
 
@@ -112,7 +119,7 @@ function getHistogram(corlorsArr) {
         beInHistogram = false;
         histogram.forEach(function (itemHist) {
             const vetors_equals = item.every((e, i) => e === itemHist[0][i]) // compara se os vetores são iguais
-           
+
             if (vetors_equals) {
                 itemHist[1] = itemHist[1] + 1;
                 beInHistogram = true;

@@ -5,7 +5,7 @@ class BMP {
     LITTLE_ENDIAN = true
     bitPos = 0
 
-    constructor(imageArray = [], pallet=[], width, height) {
+    constructor(imageArray = [], pallet = [], width, height) {
         /* 
             @param ImageArray: Image array like [[r,g,b]]
         */
@@ -64,8 +64,8 @@ class BMP {
         this.view.setUint32(50, 0, this.LITTLE_ENDIAN);
 
         this.bitPos = 54
-        
-        this.pallet.forEach(([r,g, b]) => {
+
+        this.pallet.forEach(([r, g, b]) => {
             this.view.setUint32(this.bitPos, r)
             this.view.setUint32(this.bitPos + 1, g)
             this.view.setUint32(this.bitPos + 2, b)
@@ -77,14 +77,16 @@ class BMP {
     }
 
     makePixelData() {
-        this.image.forEach((colorIdx) => {
+        /*this.image.forEach((colorIdx) => {
             this.view.setUint8(this.bitPos, colorIdx)
-        })
+        })*/
     }
 
     drawImage() {
         console.log(this.view)
-        const blob = new Blob(this.view, { type: "image/bmp" });
+        const blob = new Blob([this.bitArray], { type: "image/bmp" });
+
+        //        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
 
         const img = document.getElementById('i');
