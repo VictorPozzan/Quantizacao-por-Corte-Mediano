@@ -65,40 +65,40 @@ function getPallet(numberColors) {
 
     let height = canvas.height
     let width = canvas.width
-    let newImage = Array.from(Array(height), () => new Array(width));
-
+    //let newImage = Array.from(Array(height), () => new Array(width));
+    let newImage = []
     let actualHeigth = 1
     let actualWitdh = 0
 
-    colorsArr.forEach(function (item, index){
-        if (height % index === 0) {
-            actualHeigth += 1
-            actualWitdh = 0
-
-            console.table({actualHeigth, actualWitdh})
+    function getAllIndexes(arr, val) {
+        var indexes = [], i = -1;
+        while ((i = arr.indexOf(val, i+1)) != -1){
+            indexes.push(i);
         }
-        for (let i = 0; i < sliceArrColors.length; i++) {
-            const suposeColor = sliceArrColors[i];
-            for (let j = 0; j < suposeColor.length; j++) {
-                const cor = suposeColor[j];
-                const vetors_equals = item.every((e, i) => e === cor[0][i])
-                if(vetors_equals){
-                    newImage[height-actualHeigth][actualWitdh] = i;
+        return indexes;
+    }    
+
+    const compareArrays = (arr1, arr2) => arr1.every((e, i) => e === arr2[i])
+
+    colorsArr.forEach(imageColor => {
+        sliceArrColors.forEach(colors2Replace => {
+            for (let idx = 0; idx < colors2Replace.length; idx++) {
+                const [color, intensity] = colors2Replace[idx];
+                if(compareArrays(imageColor, color)) {
+                    newImage.push(idx)
+                    break
                 }
             }
-        }
-        actualWitdh += 1
-    });
+        })
+    })
 
+    image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
 
-    console.log(newImage)
-    //image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
+    image8bit.makeHeader()
 
-    //image8bit.makeHeader()
+    image8bit.makePixelData()
 
-    //image8bit.makePixelData()
-
-    //image8bit.drawImage()
+    image8bit.drawImage()
 
 }
 function getHistogram(corlorsArr) {

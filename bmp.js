@@ -3,6 +3,7 @@ class BMP {
     BYTES = 1
     MAGIC_NUMBER = 0x424D
     LITTLE_ENDIAN = true
+    bitPos = 0
 
     constructor(imageArray = [], pallet=[], width, height) {
         /* 
@@ -25,7 +26,6 @@ class BMP {
     _setImageSize() {
         return this.w * this.h * this.BYTES
     }
-
 
     makeHeader() {
         // BM magic number.
@@ -63,33 +63,28 @@ class BMP {
         // Number of important colours. 0 = all
         this.view.setUint32(50, 0, this.LITTLE_ENDIAN);
 
-        let bitPos = 54
+        this.bitPos = 54
         
         this.pallet.forEach(([r,g, b]) => {
-            this.view.setUint32(bitPos, r, this.LITTLE_ENDIAN)
-            this.view.setUint32(bitPos + 1, g, this.LITTLE_ENDIAN)
-            this.view.setUint32(bitPos + 2, b, this.LITTLE_ENDIAN)
-            this.view.setUint32(bitPos + 3, 0, this.LITTLE_ENDIAN)
+            this.view.setUint32(this.bitPos, r)
+            this.view.setUint32(this.bitPos + 1, g)
+            this.view.setUint32(this.bitPos + 2, b)
+            this.view.setUint32(this.bitPos + 3, 0)
 
-            bitPos += 4
+            this.bitPos += 4
         })
 
     }
 
     makePixelData() {
-        console.log(this.image)
-        /*this.image.forEach(([r,g,b]) => {
-            const offset = this.HEADER_SIZE + (g * this.w + r) * 1
-
-            this.bitArray[offset + 0] = r
-            this.bitArray[offset + 1] = g
-            this.bitArray[offset + 2] = b
-        })*/
+        this.image.forEach((colorIdx) => {
+            this.view.setUint8(this.bitPos, colorIdx)
+        })
     }
 
     drawImage() {
-        console.log(this.bitArray)
-        const blob = new Blob([this.bitArray], { type: "image/bmp" });
+        console.log(this.view)
+        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
 
         const img = document.getElementById('i');
