@@ -38,20 +38,17 @@ function getPallet(numberColors) {
     let lengthImage = dataImage.length; //quantidade de pixel
     console.log("width:" + canvas.width + " height:" + canvas.height);
     let pixelVetor = [];
-    console.log("Dados da da Imegem");
+    console.log("Dados da da Imagem");
 
     for (let i = 0; i < lengthImage; i += 4) {
         let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
         //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
         pixelVetor.push(groupPixel);
     }
-    console.log("pixelVetor:" + pixelVetor.length)
-    console.log(pixelVetor)
+
     let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
-    console.log(colorString.length)
     //console.log(colorString)
     let colorsArr = colorString.map(color => color.split(','));
-    console.log(colorsArr.length)
 
     /*let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
     [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
@@ -59,11 +56,7 @@ function getPallet(numberColors) {
     [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
     ];*/
 
-    let colorsArr2 = [];
-    colorsArr.forEach(imageColor => {
-        colorsArr2.push(imageColor);
-    })
-
+    console.log(pixelVetor)
 
     let histogram = getHistogram(colorsArr);
     let sliceArrColors = [];
@@ -72,6 +65,15 @@ function getPallet(numberColors) {
 
     pallet = getColors(sliceArrColors);
 
+    format = " ";
+    pallet.forEach(color => {
+        [r, g, b] = color
+        format += `<li style ="color : rgb(${r}, ${g}, ${b})">${r}, ${g}, ${b}</li>`;
+    });
+    var id = document.getElementById('pal');
+    id.innerHTML = format;
+    console.log("AAAAA");
+
     let height = canvas.height
     let width = canvas.width
     //let newImage = Array.from(Array(height), () => new Array(width));
@@ -79,34 +81,31 @@ function getPallet(numberColors) {
     let actualHeigth = 1
     let actualWitdh = 0
 
-    const compareArrays = (arr1, arr2) => arr1.every((e, i) => e === arr2[i])
+    const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
 
-    let index = 0
-    colorsArr2.forEach(imageColor => {
+    for (let i = pixelVetor.length - 1; i >= 0; i--) {
         let indexPallet = 0
-        sliceArrColors.forEach(colors2Replace => {
+        sliceArrColors.forEach((colors2Replace, index) => {
             for (let idx = 0; idx < colors2Replace.length; idx++) {
                 const [color, intensity] = colors2Replace[idx];
-                if (compareArrays(imageColor, color)) {
-                    newImage.push(indexPallet)
+                if (compareArrays(color, pixelVetor[i])) {
+                    newImage.push(index)
                     break
                 }
             }
             indexPallet++;
         })
-        index++;
-    })
+    }
+
 
     console.log(newImage);
-    var arr = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1])
-    console.log(arr);
-    // image8bit = new BMP(arr, pallet, canvas.width, canvas.height)
+    image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
 
-    // image8bit.makeHeader()
+    image8bit.makeHeader()
 
-    //image8bit.makePixelData()
+    image8bit.makePixelData()
 
-    //image8bit.drawImage()
+    image8bit.drawImage()
     /**
      * depth: 1 - monochrome
      *        4 - 4-bit grayscale
@@ -115,7 +114,7 @@ function getPallet(numberColors) {
      *       32 - 32-bit colour
      **/
     function drawArray(arr, depth, w, h, pal) {
-        var offset, height = h, width = w, data, image;
+        let offset, height = h, width = w, data, image;
 
         function conv(size) {
             return String.fromCharCode(size & 0xff, (size >> 8) & 0xff, (size >> 16) & 0xff, (size >> 24) & 0xff);
@@ -124,38 +123,37 @@ function getPallet(numberColors) {
             return String.fromCharCode(size[0], size[1], size[2], 0);
         }
 
-        offset = depth <= 8 ? 54 + Math.pow(2, depth) * 4 : 54;
-        height = Math.ceil(Math.sqrt(arr.length * 8 / depth));
+        offset = 54;
 
 
         //BMP Header
         data = 'BM';                          // ID field
-        data += conv(offset + arr.length + (pal.length * 3));     // BMP size
+        data += conv(offset + (pal.length * 4) + arr.length);     // BMP size
         data += conv(0);                       // unused
-        data += conv(offset);                  // pixel data offset
+        data += conv(offset + (pal.length * 4));                  // pixel data offset
 
-        //DIB Header
+        //BITMAPINFOHEADER
         data += conv(40);                      // DIB header length
         data += conv(height);                  // image height
         data += conv(width);                  // image width
         data += String.fromCharCode(1, 0);     // colour panes
-        data += String.fromCharCode(depth, 0); // bits per pixel
+        data += String.fromCharCode(8, 0); // bits per pixel
         data += conv(0);                       // compression method
         data += conv(w * h);                   // size of the raw data
         data += conv(0);                    // horizontal print resolution
         data += conv(0);                    // vertical print resolution
-        data += conv(256);                       // colour palette, 0 == 2^n
+        data += conv(0);                       // colour palette, 0 == 2^n
         data += conv(0);                       // important colours
 
-        for (var i = 0; i < 256; i++) {
+        for (let i = 0; i < 256; i++) {
             data += convColor(pal[i]);
         }
 
         //Pixel data
-
-        console.log(arr);
-        data += String.fromCharCode.apply(String, arr);
-
+        //data += String.fromCharCode.apply(String, arr);
+        for (let i = 0; i < arr.length; i++) {
+            data += arr[i];
+        }
 
         //Image element
         image = document.createElement('img');
@@ -166,7 +164,7 @@ function getPallet(numberColors) {
 
     /*Usage example, visualize random numbers generated by Math.random */
 
-    document.body.appendChild(drawArray(newImage, 8, canvas.width, canvas.height, pallet));
+    //document.body.appendChild(drawArray(newImage, 8, canvas.width, canvas.height, pallet));
 
     console.log("FINISH")
 }

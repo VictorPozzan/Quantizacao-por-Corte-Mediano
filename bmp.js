@@ -19,7 +19,7 @@ class BMP {
 
         this.imageSize = this._setImageSize()
 
-        this.bitArray = new Uint8Array(this.HEADER_SIZE + this.imageSize)
+        this.bitArray = new Uint8Array(this.HEADER_SIZE + this.image.length + (this.pallet.length * 4))
         this.view = new DataView(this.bitArray.buffer)
         this.data;
     }
@@ -67,28 +67,37 @@ class BMP {
         this.bitPos = 54
 
         this.pallet.forEach(([r, g, b]) => {
-            this.view.setUint32(this.bitPos, r)
-            this.view.setUint32(this.bitPos + 1, g)
-            this.view.setUint32(this.bitPos + 2, b)
-            this.view.setUint32(this.bitPos + 3, 0)
+            this.view.setUint8(this.bitPos, b, !this.LITTLE_ENDIAN)
+            this.view.setUint8(this.bitPos + 1, g, !this.LITTLE_ENDIAN)
+            this.view.setUint8(this.bitPos + 2, r, !this.LITTLE_ENDIAN)
+            this.view.setUint8(this.bitPos + 3, 0, !this.LITTLE_ENDIAN)
 
             this.bitPos += 4
         })
 
+
     }
 
     makePixelData() {
+        console.log(this.image.length);
 
-        this.data += String.fromCharCode.apply(String, this.image);
-        //this.view.setUint8(this.image);
-        /*this.image.forEach((colorIdx) => {
-            this.view.setUint8(this.bitPos, colorIdx)
-        })*/
+        let controlHeight = this.h
+
+        while (controlHeight != 0) {
+            const imagePart = this.image.splice(0, this.w)
+
+            imagePart.reverse().forEach(colorIdx => {
+                this.view.setUint8(this.bitPos, colorIdx, this.LITTLE_ENDIAN)
+                this.bitPos++;
+            })
+            controlHeight--
+        }
+
     }
 
     drawImage() {
         console.log(this.view)
-        const blob = new Blob([this.image], { type: "image/bmp" });
+        const blob = new Blob([this.view], { type: "image/bmp" });
 
         //        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
