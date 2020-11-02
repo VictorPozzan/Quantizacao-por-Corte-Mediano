@@ -67,12 +67,12 @@ function getPallet(numberColors) {
     });
     var id = document.getElementById('pal');
     id.innerHTML = format;
+
     let newImage = []
 
     const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
 
     for (let i = pixelVetor.length - 1; i >= 0; i--) {
-        let indexPallet = 0
         sliceArrColors.forEach((colors2Replace, index) => {
             for (let idx = 0; idx < colors2Replace.length; idx++) {
                 const [color, intensity] = colors2Replace[idx];
@@ -81,7 +81,6 @@ function getPallet(numberColors) {
                     break
                 }
             }
-            indexPallet++;
         })
     }
 

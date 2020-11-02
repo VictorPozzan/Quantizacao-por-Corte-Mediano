@@ -80,10 +80,8 @@ class BMP {
 
     makePixelData() {
         let controlHeight = this.h
-
         while (controlHeight != 0) {
             const imagePart = this.image.splice(0, this.w)
-
             imagePart.reverse().forEach(colorIdx => {
                 this.view.setUint8(this.bitPos, colorIdx, this.LITTLE_ENDIAN)
                 this.bitPos++;
@@ -95,12 +93,20 @@ class BMP {
 
     drawImage() {
         const blob = new Blob([this.view], { type: "image/bmp" });
-
-        //        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
+        const img = document.getElementById("im")
+        console.log(img);
+        img.src = url;
+        let link = "blob:" + img.src
+        console.log("URL:" + link);
+        let i = " "
+        i = `<form method="get" action="${link}">
+        <button type="submit">Download!</button>
+        </form>`
+        let id = document.getElementById('teste');
+        id.innerHTML = i;
 
-        console.log("URL:" + url);
-        //const img = document.getElementById('i');
-        //img.src = url;
+        let b = new Blob([this.view], { type: "application/octet-stream" });
+        saveAs(b, "test.bmp");
     }
 }
