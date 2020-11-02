@@ -79,8 +79,6 @@ class BMP {
     }
 
     makePixelData() {
-        console.log(this.image.length);
-
         let controlHeight = this.h
 
         while (controlHeight != 0) {
@@ -96,13 +94,13 @@ class BMP {
     }
 
     drawImage() {
-        console.log(this.view)
         const blob = new Blob([this.view], { type: "image/bmp" });
 
         //        const blob = new Blob(this.view, { type: "image/bmp" });
         const url = window.URL.createObjectURL(blob);
 
-        const img = document.getElementById('i');
-        img.src = url;
+        console.log("URL:" + url);
+        //const img = document.getElementById('i');
+        //img.src = url;
     }
 }

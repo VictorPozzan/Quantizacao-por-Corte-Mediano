@@ -6,13 +6,19 @@
 </head>
 
 <body>
+    <p>Quantização por Corte Mediano </p>
     <input type='file' />
-    <br><img id="myImg" src="#" alt="">
-
+    <br>
     <button id="pre-quantization"> Pré Quantização</button>
-    <canvas id="canvas"></canvas>
-    <div id="pal"></div>
-    <img id="i">
+    <br>
+
+    <canvas id="canvas">
+        <img id="i">
+
+    </canvas>
+    <div id="pallet">
+        <p id="pal"></p>
+    </div>
 
     <script src="bmp.js"></script>
     <script src="median-cut.js"></script>
