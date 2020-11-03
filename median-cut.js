@@ -1,8 +1,13 @@
 const canvas = document.getElementById('canvas');
 const canvas2d = canvas.getContext('2d');
 const preQuantization = document.getElementById('pre-quantization');
+const getPallet = document.getElementById('getPallet');
 
-
+let pallet;
+let indexColor = [];
+let newImage = [];
+let allColors = [];
+let allIndex = [];
 
 window.addEventListener('load', function () {
     document.querySelector('input[type="file"]').addEventListener('change', function () {
@@ -28,11 +33,42 @@ function constructCanvas(img) {
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
     event.preventDefault;
     const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
-    let pallet = getPallet(numberColors);
+    preQuantizationFunction(numberColors);
 });
 
+getPallet.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+    event.preventDefault;
+    getPalletRGB();
+});
 
-function getPallet(numberColors) {
+save.addEventListener("click", function (event) {
+    event.preventDefault;
+    saveFile();
+});
+
+function saveFile() {
+
+    image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
+
+    image8bit.makeHeader()
+
+    image8bit.makePixelData()
+
+    image8bit.saveImage()
+
+    console.log("FINISH")
+}
+function getPalletRGB() {
+    format = " ";
+    pallet.forEach(color => {
+        [r, g, b] = color
+        format += `<p style ="color : rgb(${r}, ${g}, ${b})">${r}, ${g}, ${b}</p>`;
+    });
+    var id = document.getElementById('pal');
+    id.innerHTML = format;
+}
+
+function preQuantizationFunction(numberColors) {
     let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
     let dataImage = initImage.data; // dados de cada pixel da imagem 
     let lengthImage = dataImage.length; //quantidade de pixel
@@ -60,19 +96,22 @@ function getPallet(numberColors) {
 
     pallet = getColors(sliceArrColors);
 
-    format = " ";
-    pallet.forEach(color => {
-        [r, g, b] = color
-        format += `<p style ="color : rgb(${r}, ${g}, ${b})">${r}, ${g}, ${b}</p>`;
-    });
-    var id = document.getElementById('pal');
-    id.innerHTML = format;
-
-    let newImage = []
+    //free vetors
+    colorString = [];
+    colorsArr = []
 
     const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
 
+
     for (let i = pixelVetor.length - 1; i >= 0; i--) {
+        for (let idx = 0; idx < allColors.length; idx++) {
+            if (compareArrays(allColors[idx], pixelVetor[i])) {
+                newImage.push(allIndex[idx])
+                break
+            }
+        }
+    }
+    /*for (let i = pixelVetor.length - 1; i >= 0; i--) {
         sliceArrColors.forEach((colors2Replace, index) => {
             for (let idx = 0; idx < colors2Replace.length; idx++) {
                 const [color, intensity] = colors2Replace[idx];
@@ -82,18 +121,8 @@ function getPallet(numberColors) {
                 }
             }
         })
-    }
-
-
-    image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
-
-    image8bit.makeHeader()
-
-    image8bit.makePixelData()
-
-    image8bit.drawImage()
-
-    console.log("FINISH")
+    }*/
+    console.log("tendeu")
 }
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez
@@ -195,8 +224,7 @@ function mode(arr) {
 function getColors(sliceArrColors) {
 
     let colorSet = [];
-
-    sliceArrColors.forEach(sliceColor => {
+    sliceArrColors.forEach((sliceColor, index) => {
         let red = 0, green = 0, blue = 0;
         let arrayRed = [], arrayGreen = [], arrayBlue = [];
         let arrayFrequence = [], arrayMpR = [], arrayMpG = [], arrayMpB = [];
@@ -205,12 +233,14 @@ function getColors(sliceArrColors) {
             arrayRed.push(color[0][0]);
             arrayGreen.push(color[0][1]);
             arrayBlue.push(color[0][2]);
-
             //para calcular a soma ponderada 
             arrayMpR.push(color[0][0] * color[1]);
             arrayMpG.push(color[0][1] * color[1]);
             arrayMpB.push(color[0][2] * color[1]);
             arrayFrequence.push(color[1]);
+            let vetor = [color[0][0], color[0][1], color[0][2]]
+            allColors.push(vetor)
+            allIndex.push(index)
         });
         let r = mode(arrayRed);
         let g = mode(arrayGreen);
@@ -244,6 +274,8 @@ function getColors(sliceArrColors) {
         let pallet = [red, green, blue];
         colorSet.push(pallet);
     });
+    arrayRed = [], arrayGreen = [], arrayBlue = [];
+    arrayFrequence = [], arrayMpR = [], arrayMpG = [], arrayMpB = [];
     return colorSet;
 }
 
@@ -276,6 +308,8 @@ function getGreaterAmplitude(colorsRGB) {
     amplitudeR = maxR - minR;
     amplitudeG = maxG - minG;
     amplitudeB = maxB - minB;
+
+    arrayR = [], arrayG = [], arrayB = [];
 
     let cutColor = [[amplitudeR, 0], [amplitudeG, 1], [amplitudeB, 2]];
     cutColor.sort(function (a, b) { return a[0] - b[0]; });

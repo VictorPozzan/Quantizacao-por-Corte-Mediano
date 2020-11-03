@@ -91,22 +91,8 @@ class BMP {
 
     }
 
-    drawImage() {
-        const blob = new Blob([this.view], { type: "image/bmp" });
-        const url = window.URL.createObjectURL(blob);
-        const img = document.getElementById("im")
-        console.log(img);
-        img.src = url;
-        let link = "blob:" + img.src
-        console.log("URL:" + link);
-        let i = " "
-        i = `<form method="get" action="${link}">
-        <button type="submit">Download!</button>
-        </form>`
-        let id = document.getElementById('teste');
-        id.innerHTML = i;
-
-        let b = new Blob([this.view], { type: "application/octet-stream" });
-        saveAs(b, "test.bmp");
+    saveImage() {
+        let blob = new Blob([this.view], { type: "application/octet-stream" });
+        saveAs(blob, "test.bmp");
     }
 }
