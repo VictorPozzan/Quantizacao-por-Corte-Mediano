@@ -33,14 +33,14 @@ function constructCanvas(img) {
     ok("done1");
 }
 
-//esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+//inicializa a pre quantização, ou seja achar as cores que a imagem vai possuir
 preQuantization.addEventListener("click", function (event) { 
     event.preventDefault;
     const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
     preQuantizationFunction(numberColors);
 });
 
-//esta função serve para inicializar a paleta de cores
+//inicializa a paleta de cores
 getPallet.addEventListener("click", function (event) { 
     event.preventDefault;
     getPalletRGB();
@@ -52,14 +52,14 @@ save.addEventListener("click", function (event) {
     saveFile();
 });
 
-//botao ok
+//printa em cada passo um "ok"
 function ok(done) {
     finish = '&#x1F197';
     var id = document.getElementById(`${done}`);
     id.innerHTML = finish;
 }
 
-//Salva o arquivo em disco
+//inicializao BMP, preenche o header, faz o bitmap e salva .bmp
 function saveFile() {
 
     image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
@@ -71,10 +71,9 @@ function saveFile() {
     image8bit.saveImage()
 
     ok("done4");
-    console.log("FINISH")
 }
 
-//retorna a paleta de cores rgb da imagem quantizada
+//exibe a paleta de cores rgb da imagem quantizada
 function getPalletRGB() {
     format = " ";
     pallet.forEach(color => {
@@ -86,7 +85,7 @@ function getPalletRGB() {
     ok("done3");
 }
 
-//funcao que executa o algoritmo de quantização
+//inicializa o algoritmo de quantização
 function preQuantizationFunction(numberColors) {
     let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
     let dataImage = initImage.data; // dados de cada pixel da imagem 
@@ -113,14 +112,14 @@ function preQuantizationFunction(numberColors) {
     colorString = [];
     colorsArr = []
 
-    const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
-
+    
     //verifica se o pixel Vetor é multiplo de 4
     if (canvas.width % 4 != 0) {
         let diff = canvas.width % 4;
         num = 4 - diff;
     }
-
+    //cria um vetor com os indices referentes a paleta (esta parte é demorada)
+    const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
     for (let i = pixelVetor.length - 1; i >= 0; i--) {
         for (let idx = 0; idx < allColors.length; idx++) {
             if (compareArrays(allColors[idx], pixelVetor[i])) {
@@ -135,12 +134,10 @@ function preQuantizationFunction(numberColors) {
         }
     }
 
-    console.log(newImage.length)
     ok("done2");
-    console.log("finish pre-quantization 8 bits")
 }
 
-//computa o histograma da imagem
+//retorna o histograma da imagem 
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez
     let histogram = [];
@@ -153,14 +150,14 @@ function getHistogram(corlorsArr) {
         histogram.forEach(function (itemHist) {
             const vetors_equals = item.every((e, i) => e === itemHist[0][i]) // compara se os vetores são iguais
 
-            if (vetors_equals) {
+            if (vetors_equals) { // caso seja igual incrementa a intensidade
                 itemHist[1] = itemHist[1] + 1;
                 beInHistogram = true;
                 return;
             }
         });
 
-        if (!beInHistogram) {
+        if (!beInHistogram) { // adiciona a cor com a itensidade 1
             let color = [item, 1];
             histogram.push(color);
         }
@@ -169,7 +166,7 @@ function getHistogram(corlorsArr) {
     return histogram;
 }
 
-//funcao que computa o algoritmo de corte mediano
+//funcao recursiva que computa o algoritmo de corte mediano
 function medianCut(histogram, numberColors, sliceArrColors) {
     if (numberColors === 1) {
         sliceArrColors.push(histogram);
@@ -233,6 +230,7 @@ const histogram = arr => arr.reduce((result, item) => {
 
 const pairs = obj => Object.keys(obj).map(key => [key, obj[key]])
 
+//realiza a moda de um array
 function mode(arr) {
     let result = pairs(histogram(arr))
         .sort((a, b) => b[1] - a[1])
@@ -241,7 +239,7 @@ function mode(arr) {
     return result.length === arr.length ? [] : result
 }
 
-//encontra a cor representante para cada subespaço criado. A cor é definida pela moda
+//encontra a cor representante para cada subespaço criado. A cor é definida pela moda ou pela soma ponderada
 function getColors(sliceArrColors) {
 
     let colorSet = [];
@@ -295,7 +293,7 @@ function getColors(sliceArrColors) {
         let pallet = [red, green, blue];
         colorSet.push(pallet);
     });
-    arrayRed = [], arrayGreen = [], arrayBlue = [];
+    arrayRed = [], arrayGreen = [], arrayBlue = [];//deszinicializa os arrays
     arrayFrequence = [], arrayMpR = [], arrayMpG = [], arrayMpB = [];
     return colorSet;
 }

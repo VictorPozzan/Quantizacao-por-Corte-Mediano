@@ -3,7 +3,7 @@ class BMP {
     BYTES = 1
     MAGIC_NUMBER = 0x424D
     LITTLE_ENDIAN = true
-    bitPos = 0
+    bitPos = 0 
 
     constructor(imageArray = [], pallet = [], width, height) {
         /* 
@@ -81,7 +81,6 @@ class BMP {
 
     //escreve indice referente a cor [r,g,b] no arquivo em ordem contraria.
     makePixelData(num) {
-        console.log(this.bitArray.length);
         let controlHeight = this.h
         while (controlHeight != 0) {
             let imagePart = this.image.splice(0, this.w+num)
@@ -92,9 +91,9 @@ class BMP {
 
             controlHeight--
         }
-        console.log(this.view.length)
     }
 
+    //salva a imagem .bmp usando a biblioteca file-saver.js
     saveImage() {
         let blob = new Blob([this.view], { type: "application/octet-stream" });
         saveAs(blob, "test.bmp");
