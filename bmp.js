@@ -1,5 +1,5 @@
 class BMP {
-    HEADER_SIZE = 54
+    HEADER_SIZE = 54 
     BYTES = 1
     MAGIC_NUMBER = 0x424D
     LITTLE_ENDIAN = true
@@ -27,7 +27,7 @@ class BMP {
     _setImageSize() {
         return (this.w * this.h * this.BYTES) 
     }
-
+    //head - fixo em todo .bmp
     makeHeader() {
         // BM magic number.
         this.view.setUint16(0, this.MAGIC_NUMBER, !this.LITTLE_ENDIAN);
@@ -66,6 +66,7 @@ class BMP {
 
         this.bitPos = 54
 
+        // Escreve a paleta de cores no arquivo. Um 0 é adicionado ao final de cada cor por se tratar de um campo reservado
         this.pallet.forEach(([r, g, b]) => {
             this.view.setUint8(this.bitPos, b, !this.LITTLE_ENDIAN)
             this.view.setUint8(this.bitPos + 1, g, !this.LITTLE_ENDIAN)
@@ -78,6 +79,7 @@ class BMP {
 
     }
 
+    //escreve indice referente a cor [r,g,b] no arquivo em ordem contraria.
     makePixelData(num) {
         console.log(this.bitArray.length);
         let controlHeight = this.h

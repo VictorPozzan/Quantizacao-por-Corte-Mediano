@@ -10,6 +10,7 @@ let allColors = [];
 let allIndex = [];
 let num = 0;
 
+//representa a imagem em forma de um array de cores
 window.addEventListener('load', function () {
     document.querySelector('input[type="file"]').addEventListener('change', function () {
         if (this.files && this.files[0]) {
@@ -24,6 +25,7 @@ function main() {
     constructCanvas(this);
 }
 
+//printa a imagem na tela do browser
 function constructCanvas(img) {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
@@ -31,28 +33,33 @@ function constructCanvas(img) {
     ok("done1");
 }
 
-preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+//esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+preQuantization.addEventListener("click", function (event) { 
     event.preventDefault;
     const numberColors = 256; //numero de cores que a nossa imagem deve ter 2^8=256
     preQuantizationFunction(numberColors);
 });
 
-getPallet.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
+//esta função serve para inicializar a paleta de cores
+getPallet.addEventListener("click", function (event) { 
     event.preventDefault;
     getPalletRGB();
 });
 
+//botao para salvar o arquivo em disco
 save.addEventListener("click", function (event) {
     event.preventDefault;
     saveFile();
 });
 
+//botao ok
 function ok(done) {
     finish = '&#x1F197';
     var id = document.getElementById(`${done}`);
     id.innerHTML = finish;
 }
 
+//Salva o arquivo em disco
 function saveFile() {
 
     image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
@@ -66,6 +73,8 @@ function saveFile() {
     ok("done4");
     console.log("FINISH")
 }
+
+//retorna a paleta de cores rgb da imagem quantizada
 function getPalletRGB() {
     format = " ";
     pallet.forEach(color => {
@@ -77,30 +86,25 @@ function getPalletRGB() {
     ok("done3");
 }
 
+//funcao que executa o algoritmo de quantização
 function preQuantizationFunction(numberColors) {
     let initImage = canvas2d.getImageData(0, 0, canvas.width, canvas.height);
     let dataImage = initImage.data; // dados de cada pixel da imagem 
     let lengthImage = dataImage.length; //quantidade de pixel
     let pixelVetor = [];
 
+    //salva as cores no vetor pixelVetor
     for (let i = 0; i < lengthImage; i += 4) {
         let groupPixel = [dataImage[i], dataImage[i + 1], dataImage[i + 2]];
-        //console.log("R:[i]"+dataImage[i]+",   G:[i+1]"+ dataImage[i+1]+",   B: [i+2]:"+dataImage[i+2]);
         pixelVetor.push(groupPixel);
     }
 
     let colorString = [...new Set(pixelVetor.map(color => color.toString()))];
     let colorsArr = colorString.map(color => color.split(','));
-
-    /*let colorsArr = [[136, 0, 21], [136, 0, 21], [255, 174, 200], [255, 174, 200],
-    [255, 174, 200], [185, 122, 87], [185, 122, 87], [140, 255, 251],
-    [239, 228, 176], [239, 228, 176], [200, 191, 231], [196, 255, 14],
-    [255, 127, 39], [34, 177, 76], [195, 195, 195], [195, 195, 195]
-    ];*/
-
     let histogram = getHistogram(colorsArr);
     let sliceArrColors = [];
 
+    //executa o algoritmo de corte mediano e retorna a paleta de cores
     medianCut(histogram, numberColors, sliceArrColors);
 
     pallet = getColors(sliceArrColors);
@@ -135,6 +139,8 @@ function preQuantizationFunction(numberColors) {
     ok("done2");
     console.log("finish pre-quantization 8 bits")
 }
+
+//computa o histograma da imagem
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez
     let histogram = [];
@@ -163,24 +169,26 @@ function getHistogram(corlorsArr) {
     return histogram;
 }
 
-
+//funcao que computa o algoritmo de corte mediano
 function medianCut(histogram, numberColors, sliceArrColors) {
     if (numberColors === 1) {
         sliceArrColors.push(histogram);
         return;
     } else {
         numberColors /= 2;
-        let greaterBreadth = getGreaterAmplitude(histogram);
-        histogram.sort(function (a, b) { return +a[0][greaterBreadth] - +b[0][greaterBreadth] });
-        let numberPixels = getOcurrenceHistogram(histogram);
-        let index = getIndexCutHistogram(histogram, numberPixels);
+        let greaterBreadth = getGreaterAmplitude(histogram);//obtem o canal de maior amplitude
+        histogram.sort(function (a, b) { return +a[0][greaterBreadth] - +b[0][greaterBreadth] });//ordena o histograma
+        let numberPixels = getOcurrenceHistogram(histogram);//retorna o numero de pixeis no histograma
+        let index = getIndexCutHistogram(histogram, numberPixels);//retorna o indice em que ocorrera o corte
         let firstHalf = histogram.slice(0, index + 1);
         let secondHalf = histogram.slice(index + 1);
+        //executa a funcao de corte mediano nos dois subespaços criados
         medianCut(firstHalf, numberColors, sliceArrColors);
         medianCut(secondHalf, numberColors, sliceArrColors);
     }
 }
 
+//retorna o numero de pixeis no histograma
 function getOcurrenceHistogram(histogram) {
     let count = 0;
     histogram.forEach(function (item) {
@@ -189,13 +197,14 @@ function getOcurrenceHistogram(histogram) {
     return count;
 }
 
-
+//retorna o indice em que ocorrera o corte
 function getIndexCutHistogram(histogram, numberPixels) {
     let indexCut = numberPixels / 2;
     let acumulatorFrequence = 0;
 
     let cutPosition;
 
+    //considera possiveis situaçoes em relaçao a que posiçao do histograma deve ser feito o corte
     for (let i = 0; i < histogram.length; i++) {
         acumulatorFrequence = histogram[i][1] + acumulatorFrequence;
         if (acumulatorFrequence == indexCut) {
@@ -216,6 +225,7 @@ function getIndexCutHistogram(histogram, numberPixels) {
     return cutPosition;
 }
 
+//extrai as cores do histograma
 const histogram = arr => arr.reduce((result, item) => {
     result[item] = (result[item] || 0) + 1
     return result
@@ -231,7 +241,7 @@ function mode(arr) {
     return result.length === arr.length ? [] : result
 }
 
-
+//encontra a cor representante para cada subespaço criado. A cor é definida pela moda
 function getColors(sliceArrColors) {
 
     let colorSet = [];
@@ -290,6 +300,7 @@ function getColors(sliceArrColors) {
     return colorSet;
 }
 
+// retorna apenas as cores do histograma
 function treatArray(colorsRGB) {
     let colors = [];
     colorsRGB.forEach(function (item) {
@@ -298,6 +309,7 @@ function treatArray(colorsRGB) {
     return colors;
 }
 
+//Calcula que canal possui a maior amplitude de valores e o retorna
 function getGreaterAmplitude(colorsRGB) {
     let arrayR = [], arrayG = [], arrayB = [];
     let colors = treatArray(colorsRGB);
@@ -327,6 +339,7 @@ function getGreaterAmplitude(colorsRGB) {
     return cutColor[cutColor.length - 1][1];//0=red, 1=green, 0=blue
 }
 
+//isola apenas um canal das cores passadas em colorsRGB
 function arrayChannelColor(colorsRGB, typeChannel) {
     let channel = [];
     for (let i = 0; i < colorsRGB.length; i += 3) {
@@ -335,6 +348,7 @@ function arrayChannelColor(colorsRGB, typeChannel) {
     return channel;
 }
 
+//encontra o maior valor de intensidade de um canal. Usado no calculo da amplitude
 function findMax(arrayColor) {
     let max = arrayColor.reduce(function (a, b) {
         return Math.max(a, b);
@@ -342,6 +356,7 @@ function findMax(arrayColor) {
     return max;
 }
 
+//encontra o menor valor de intensidade de um canal. Usado no calculo da amplitude
 function findMin(arrayColor) {
     let min = arrayColor.reduce(function (a, b) {
         return Math.min(a, b);
