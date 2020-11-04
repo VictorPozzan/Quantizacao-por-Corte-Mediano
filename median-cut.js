@@ -28,7 +28,7 @@ function constructCanvas(img) {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     canvas2d.drawImage(img, 0, 0);
-
+    ok("done1");
 }
 
 preQuantization.addEventListener("click", function (event) { //esta função serve para inicializar a pre quantização, ou seja achar as cores que a imagem vai possuir
@@ -47,6 +47,12 @@ save.addEventListener("click", function (event) {
     saveFile();
 });
 
+function ok(done) {
+    finish = '&#x1F197';
+    var id = document.getElementById(`${done}`);
+    id.innerHTML = finish;
+}
+
 function saveFile() {
 
     image8bit = new BMP(newImage, pallet, canvas.width, canvas.height)
@@ -57,16 +63,18 @@ function saveFile() {
 
     image8bit.saveImage()
 
+    ok("done4");
     console.log("FINISH")
 }
 function getPalletRGB() {
     format = " ";
     pallet.forEach(color => {
         [r, g, b] = color
-        format += `<p style ="color : rgb(${r}, ${g}, ${b})">${r}, ${g}, ${b}</p>`;
+        format += `<div style ="color :">${r}, ${g}, ${b}</div>`;
     });
     var id = document.getElementById('pal');
     id.innerHTML = format;
+    ok("done3");
 }
 
 function preQuantizationFunction(numberColors) {
@@ -104,8 +112,8 @@ function preQuantizationFunction(numberColors) {
     const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
 
     //verifica se o pixel Vetor é multiplo de 4
-    if(canvas.width%4!=0){
-        let diff = canvas.width%4;
+    if (canvas.width % 4 != 0) {
+        let diff = canvas.width % 4;
         num = 4 - diff;
     }
 
@@ -113,8 +121,8 @@ function preQuantizationFunction(numberColors) {
         for (let idx = 0; idx < allColors.length; idx++) {
             if (compareArrays(allColors[idx], pixelVetor[i])) {
                 newImage.push(allIndex[idx])
-                if(i%canvas.width==0){
-                    for(let j=0; j<num; j++){
+                if (i % canvas.width == 0) {
+                    for (let j = 0; j < num; j++) {
                         newImage.push(allIndex[idx])
                     }
                 }
@@ -124,18 +132,7 @@ function preQuantizationFunction(numberColors) {
     }
 
     console.log(newImage.length)
-
-    /*for (let i = pixelVetor.length - 1; i >= 0; i--) {
-        sliceArrColors.forEach((colors2Replace, index) => {
-            for (let idx = 0; idx < colors2Replace.length; idx++) {
-                const [color, intensity] = colors2Replace[idx];
-                if (compareArrays(color, pixelVetor[i])) {
-                    newImage.push(index)
-                    break
-                }
-            }
-        })
-    }*/
+    ok("done2");
     console.log("finish pre-quantization 8 bits")
 }
 function getHistogram(corlorsArr) {

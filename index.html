@@ -6,15 +6,36 @@
 </head>
 
 <body>
-    <p>Quantização por Corte Mediano </p>
-    <input type='file' />
+    <h1>Quantização por Corte Mediano </h1>
+    <div class="row">
+        <div class="column" style="background-color:#ced4dc;">
+            <h4>Passo 1:</h4>
+            <h6>*Formatos suportados .png, .jpg, jpeg</h6>
+            <label for='selecao-arquivo'>Selecionar um arquivo</label>
+            <input id='selecao-arquivo' type='file' />
+            <h5 id="done1"></h5>
+        </div>
+        <div class="column" style="background-color:#dadfe5;">
+            <h4>Passo 2:</h4>
+            <h6>*Este passo pode demorar alguns minutos</h6>
+            <button class="button button1" id="pre-quantization"> Pré Quantização</button>
+            <h5 id="done2"></h5>
+        </div>
+        <div class="column" style="background-color:#e6e9ed;">
+            <h4>Passo 3:</h4>
+            <h6>*Passo Opcional</h6>
+            <button class="button button1" id="getPallet"> Paleta em R,G,B </button>
+            <h5 id="done3"></h5>
+        </div>
+        <div class="column" style="background-color:#f2f4f6;">
+            <h4>Passo 4:</h4>
+            <h6>*Arquivo em .bmp</h6>
+            <button class="button button1" id="save"> Salvar Arquivo </button>
+            <h5 id="done4"></h5>
+        </div>
+    </div>
     <br>
-    <button id="pre-quantization"> Pré Quantização</button>
-    <br>
-    <button id="getPallet"> Paleta em R,G,B </button>
-    <br>
-    <button id="save"> Save File </button>
-    <br>
+
     <canvas id="canvas">
         <img id="i">
     </canvas>
@@ -26,6 +47,104 @@
     <script src="bmp.js"></script>
     <script src="median-cut.js"></script>
     <script src="file-saver.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            border-radius: 1mm;
+
+        }
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 25%;
+            padding: 10px;
+            height: 150px;
+            /* Should be removed. Only for demonstration */
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+        @media screen and (max-width: 600px) {
+            .column {
+                width: 100%;
+            }
+        }
+
+        h4 {
+            margin: .1rem 0;
+            margin-top: 1%;
+        }
+
+        h6 {
+            margin: .1rem 0;
+            font-style: italic;
+        }
+
+        h5 {
+            font-size: 14px;
+            margin: .1rem 0;
+            color: seagreen;
+        }
+
+        .button {
+            background-color: #00A6ED;
+            border: none;
+            border-radius: 1mm;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            height: 40%;
+        }
+
+        .button1 {
+            background-color: white;
+            color: black;
+            border: 2px solid #00A6ED;
+        }
+
+        .button1:hover {
+            background-color: #00A6ED;
+            color: white;
+        }
+
+        input[type='file'] {
+            display: none
+        }
+
+        label {
+            background-color: #00A6ED;
+            border: none;
+            border-radius: 1mm;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            height: 40%;
+        }
+    </style>
 </body>
 
 </html>
