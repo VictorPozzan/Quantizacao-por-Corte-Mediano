@@ -8,6 +8,7 @@ let indexColor = [];
 let newImage = [];
 let allColors = [];
 let allIndex = [];
+let num = 0;
 
 window.addEventListener('load', function () {
     document.querySelector('input[type="file"]').addEventListener('change', function () {
@@ -52,7 +53,7 @@ function saveFile() {
 
     image8bit.makeHeader()
 
-    image8bit.makePixelData()
+    image8bit.makePixelData(num)
 
     image8bit.saveImage()
 
@@ -102,15 +103,28 @@ function preQuantizationFunction(numberColors) {
 
     const compareArrays = (arr1, arr2) => arr1.every((e, i) => +e === arr2[i])
 
+    //verifica se o pixel Vetor é multiplo de 4
+    if(canvas.width%4!=0){
+        let diff = canvas.width%4;
+        num = 4 - diff;
+    }
 
     for (let i = pixelVetor.length - 1; i >= 0; i--) {
         for (let idx = 0; idx < allColors.length; idx++) {
             if (compareArrays(allColors[idx], pixelVetor[i])) {
                 newImage.push(allIndex[idx])
+                if(i%canvas.width==0){
+                    for(let j=0; j<num; j++){
+                        newImage.push(allIndex[idx])
+                    }
+                }
                 break
             }
         }
     }
+
+    console.log(newImage.length)
+
     /*for (let i = pixelVetor.length - 1; i >= 0; i--) {
         sliceArrColors.forEach((colors2Replace, index) => {
             for (let idx = 0; idx < colors2Replace.length; idx++) {
@@ -122,7 +136,7 @@ function preQuantizationFunction(numberColors) {
             }
         })
     }*/
-    console.log("tendeu")
+    console.log("finish pre-quantization 8 bits")
 }
 function getHistogram(corlorsArr) {
     let firstColor = [corlorsArr[0], 1];//primeira cor recebe 1 que significa que a cor apareceu uma vez

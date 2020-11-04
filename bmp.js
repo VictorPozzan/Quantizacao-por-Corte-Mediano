@@ -14,8 +14,8 @@ class BMP {
 
         this.pallet = pallet
 
-        this.w = width
-        this.h = height
+        this.w = width 
+        this.h = height 
 
         this.imageSize = this._setImageSize()
 
@@ -25,7 +25,7 @@ class BMP {
     }
 
     _setImageSize() {
-        return this.w * this.h * this.BYTES
+        return (this.w * this.h * this.BYTES) 
     }
 
     makeHeader() {
@@ -78,17 +78,19 @@ class BMP {
 
     }
 
-    makePixelData() {
+    makePixelData(num) {
+        console.log(this.bitArray.length);
         let controlHeight = this.h
         while (controlHeight != 0) {
-            const imagePart = this.image.splice(0, this.w)
+            let imagePart = this.image.splice(0, this.w+num)
             imagePart.reverse().forEach(colorIdx => {
                 this.view.setUint8(this.bitPos, colorIdx, this.LITTLE_ENDIAN)
                 this.bitPos++;
             })
+
             controlHeight--
         }
-
+        console.log(this.view.length)
     }
 
     saveImage() {
